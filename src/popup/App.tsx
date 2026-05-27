@@ -2,7 +2,7 @@ import { Download, Edit3, FileText, Info, Play, Plus, Save, Trash2, Upload, X } 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
 import { MessageType, type MessageResponse } from "../shared/messages";
-import type { Channel } from "../shared/types";
+import type { AppSettings, Channel } from "../shared/types";
 import { createChannel, addItemToChannel, removeItemFromChannel, renameChannel } from "../services/channelService";
 import { createExportFileName, deserializeChannels, serializeChannels } from "../services/playlistPortability";
 import { storage } from "../services/storage";
@@ -20,6 +20,11 @@ export function App() {
   const [titleInput, setTitleInput] = useState("");
   const [editingName, setEditingName] = useState("");
   const [status, setStatus] = useState("Ready");
+  const [settings, setSettings] = useState<AppSettings>({
+    autoplay: true,
+    avoidBackToBackSeries: true,
+    shufflePlayback: true
+  });
   const importInputRef = useRef<HTMLInputElement>(null);
 
   const selectedChannel = useMemo(
@@ -33,6 +38,7 @@ export function App() {
       setSelectedChannelId(storedChannels[0]?.id);
       setEditingName(storedChannels[0]?.name ?? "");
     });
+    void storage.getSettings().then(setSettings);
   }, []);
 
   useEffect(() => {
@@ -127,6 +133,16 @@ export function App() {
     void chrome.tabs.create({ url: chrome.runtime.getURL("privacy.html") });
   }
 
+  async function handleShuffleToggle(enabled: boolean) {
+    const nextSettings = {
+      ...settings,
+      shufflePlayback: enabled
+    };
+    setSettings(nextSettings);
+    await storage.setSettings(nextSettings);
+    setStatus(enabled ? "Shuffle enabled" : "Shuffle disabled");
+  }
+
   return (
     <main className="app-shell">
       <header className="topbar">
@@ -168,6 +184,20 @@ export function App() {
           accept="application/json,.json"
           onChange={handleImportFile}
         />
+      </section>
+
+      <section className="settings-row" aria-label="Playback settings">
+        <label className="toggle-control">
+          <input
+            type="checkbox"
+            checked={settings.shufflePlayback}
+            onChange={(event) => void handleShuffleToggle(event.target.checked)}
+          />
+          <span className="toggle-track" aria-hidden="true">
+            <span className="toggle-thumb" />
+          </span>
+          <span>Shuffle playback</span>
+        </label>
       </section>
 
       <section className="channel-tabs" aria-label="Channels">

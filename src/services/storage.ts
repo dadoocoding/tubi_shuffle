@@ -3,7 +3,8 @@ import type { AppSettings, Channel, EpisodeProgress, PlaybackSession } from "../
 
 const defaultSettings: AppSettings = {
   autoplay: true,
-  avoidBackToBackSeries: true
+  avoidBackToBackSeries: true,
+  shufflePlayback: true
 };
 
 async function getValue<T>(key: string, fallback: T): Promise<T> {
@@ -63,7 +64,10 @@ export const storage = {
   },
 
   getSettings(): Promise<AppSettings> {
-    return getValue<AppSettings>(STORAGE_KEYS.settings, defaultSettings);
+    return getValue<Partial<AppSettings>>(STORAGE_KEYS.settings, {}).then((settings) => ({
+      ...defaultSettings,
+      ...settings
+    }));
   },
 
   setSettings(settings: AppSettings): Promise<void> {

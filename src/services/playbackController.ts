@@ -26,7 +26,9 @@ export async function startChannel(channel: Channel): Promise<PlaybackSession> {
   const progress = await storage.getEpisodeProgress();
   const settings = await storage.getSettings();
   const entry = pickNextQueueEntry(channel, progress, {
-    avoidBackToBackSeries: settings.avoidBackToBackSeries
+    avoidBackToBackSeries: settings.avoidBackToBackSeries,
+    shufflePlayback: settings.shufflePlayback,
+    playedItemIds: []
   });
 
   if (!entry) throw new Error("Channel has no playable items.");
@@ -38,6 +40,7 @@ export async function startChannel(channel: Channel): Promise<PlaybackSession> {
     tabId,
     activeEntry: entry,
     lastSeriesId: entry.seriesId,
+    playedItemIds: [],
     startedAt: now,
     updatedAt: now
   };
@@ -55,10 +58,18 @@ export async function advanceChannel(channel: Channel): Promise<PlaybackSession 
   const progress = recordQueueEntryCompleted(session.activeEntry, await storage.getEpisodeProgress());
   await storage.setEpisodeProgress(progress);
 
+  const validItemIds = new Set(channel.items.map((item) => item.id));
+  const completedItemIds = [...(session.playedItemIds ?? []), session.activeEntry.itemId].filter((itemId) =>
+    validItemIds.has(itemId)
+  );
+  const playedItemIdsForNextPick = completedItemIds.length >= channel.items.length ? [] : completedItemIds;
+
   const settings = await storage.getSettings();
   const nextEntry = pickNextQueueEntry(channel, progress, {
     avoidBackToBackSeries: settings.avoidBackToBackSeries,
-    lastSeriesId: session.lastSeriesId
+    shufflePlayback: settings.shufflePlayback,
+    lastSeriesId: session.lastSeriesId,
+    playedItemIds: playedItemIdsForNextPick
   });
 
   if (!nextEntry) {
@@ -72,6 +83,7 @@ export async function advanceChannel(channel: Channel): Promise<PlaybackSession 
     tabId,
     activeEntry: nextEntry,
     lastSeriesId: nextEntry.seriesId,
+    playedItemIds: playedItemIdsForNextPick,
     updatedAt: new Date().toISOString()
   };
   await storage.setPlaybackSession(nextSession);

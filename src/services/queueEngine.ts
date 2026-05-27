@@ -3,7 +3,9 @@ import { createId } from "./id";
 
 export interface QueueEngineOptions {
   avoidBackToBackSeries: boolean;
+  shufflePlayback: boolean;
   lastSeriesId?: string;
+  playedItemIds?: string[];
 }
 
 function shuffle<T>(items: T[]): T[] {
@@ -26,7 +28,10 @@ export function pickNextQueueEntry(
 ): QueueEntry | undefined {
   if (channel.items.length === 0) return undefined;
 
-  const candidates = shuffle(channel.items);
+  const playedIds = new Set(options.playedItemIds ?? []);
+  const unplayedItems = channel.items.filter((item) => !playedIds.has(item.id));
+  const availableItems = unplayedItems.length > 0 ? unplayedItems : channel.items;
+  const candidates = options.shufflePlayback ? shuffle(availableItems) : availableItems;
   const preferred = candidates.find((item) => {
     const seriesKey = itemSeriesKey(item);
     return !options.avoidBackToBackSeries || !seriesKey || seriesKey !== options.lastSeriesId;

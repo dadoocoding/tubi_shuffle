@@ -43,6 +43,12 @@ Playback stays on official Tubi pages. The extension does not block ads, skip ad
 5. Click **Add URL** for each item.
 6. Click **Start** to begin playback.
 
+## Playback Order
+
+- Leave **Shuffle playback** on to randomize the order of items in a channel.
+- Turn **Shuffle playback** off to play channel items in the order they appear in the channel.
+- Once an item has played, it is skipped for the rest of the current pass through the channel. It becomes eligible again only after every item in that channel has played once.
+
 ## Import and Export Playlists
 
 - Click **Export** to save the selected channel as a JSON playlist file.

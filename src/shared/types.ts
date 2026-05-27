@@ -40,6 +40,7 @@ export interface PlaybackSession {
   tabId?: number;
   activeEntry?: QueueEntry;
   lastSeriesId?: string;
+  playedItemIds?: string[];
   startedAt: string;
   updatedAt: string;
 }
@@ -55,4 +56,5 @@ export interface PlaybackMetadata {
 export interface AppSettings {
   autoplay: boolean;
   avoidBackToBackSeries: boolean;
+  shufflePlayback: boolean;
 }
