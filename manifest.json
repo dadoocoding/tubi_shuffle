@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "Tubi Shuffle TV",
+  "version": "0.1.0",
+  "description": "Create local pseudo-TV channels from selected Tubi shows and movies while playback stays on official Tubi pages.",
+  "action": {
+    "default_title": "Tubi Shuffle TV",
+    "default_popup": "src/popup/index.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "background": {
+    "service_worker": "background/serviceWorker.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://tubitv.com/*", "https://www.tubitv.com/*"],
+      "js": ["content/tubiContentScript.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "permissions": ["storage", "tabs"],
+  "host_permissions": ["https://tubitv.com/*", "https://www.tubitv.com/*"],
+  "minimum_chrome_version": "114"
+}
